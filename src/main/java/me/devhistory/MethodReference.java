@@ -1,7 +1,6 @@
 package me.devhistory;
 
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -40,7 +39,8 @@ class Greeting {
 public class MethodReference {
     public static void main(String[] args){
         UnaryOperator<String> hi = (s) -> "hi " + s;
-        //위와 같은 기능을 하는 것이 이미 구현되어 있다면 메소드 레퍼런스를 활용해서 사용 가능
+
+        //위와 같은 기능을 하는 것이 이미 구현되어 있다면 직접 구현하지않고 메소드 레퍼런스를 활용해서 사용가능
         /* 1. 스태틱 메소드 참조 */
         UnaryOperator<String> hi2 = Greeting::hi;
         System.out.println(hi2.apply("DevHistory"));
