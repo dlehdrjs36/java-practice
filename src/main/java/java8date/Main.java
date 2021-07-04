@@ -86,9 +86,11 @@ public class Main {
         System.out.println(LocalDateTimeNow.format(MMddyyyy)); //LocalDateTimeNow 포매팅
         System.out.println(LocalDateTimeNow.format(isoLocalDate));//LocalDateTimeNow 포매팅
         System.out.println("#######################");
+
         LocalDate parse = LocalDate.parse("07/15/1982", MMddyyyy); //파싱
         System.out.println(parse);
         System.out.println("#######################");
+
         LocalDateTime birthDay2 = LocalDateTime.of(1993, Month.JUNE, 24, 0, 0, 0); //현재 시스템 일시 생성
         System.out.println(birthDay2);
         System.out.println("#######################");
@@ -126,4 +128,5 @@ public class Main {
 
         ZoneId zoneId = TimeZone.getTimeZone("PST").toZoneId();
         TimeZone timeZone = TimeZone.getTimeZone(zoneId);
-    }}
+    }
+}
