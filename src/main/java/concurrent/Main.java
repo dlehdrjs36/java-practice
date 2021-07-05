@@ -1,7 +1,14 @@
 package concurrent;
 
+import java.util.Arrays;
+import java.util.Random;
+import java.util.stream.IntStream;
+
 public class Main {
-    public static void main(String[] args) {
+    /***
+     * Java Concurrent-1 (Thread)
+     */
+    private static void javaConcurrent1(){
         /*
             과거의 쓰레드 사용 방법
             - 쓰레드가 늘어날 때마다 인터럽트 처리가 점점 늘어나고 복잡해진다.(문제)
@@ -37,8 +44,7 @@ public class Main {
         System.out.println(thread + " is finished");
         thread.interrupt(); //쓰레드를 깨우는 동작을 수행
     }
-
-    static class MyThread extends Thread {
+    private static class MyThread extends Thread {
         @Override
         public void run() {
             try {
@@ -49,4 +55,34 @@ public class Main {
             System.out.println("Thread2: " + Thread.currentThread().getName());
         }
     }
+
+    /*
+        배열 병렬 정렬
+         - Fork/Join 프레임워크를 사용해서 배열을 병렬로 정렬
+     */
+    private static void parallelSort() {
+        int size = 1500;
+        int[] numbers = new int[size];
+        Random random = new Random();
+        IntStream.range(0, size).forEach(i -> numbers[i] = random.nextInt());
+        //일반 정렬 시간 측정(쓰레드 1개 사용)
+        long start = System.nanoTime();
+        Arrays.sort(numbers); // Dual-Pivot Quicksort 사용
+        System.out.println("serial sorting took " + (System.nanoTime() - start));
+
+        IntStream.range(0, size).forEach(i -> numbers[i] = random.nextInt());
+        //병렬 정렬 시간 측정(쓰레드 여러 개 사용)
+        start = System.nanoTime();
+        Arrays.parallelSort(numbers); //배열을 쪼개면서 하위 배열 길이가 최소 단위에 도달하면 합치면서 정렬(Arrays.sort 사용)
+        System.out.println("parallel sorting took " + (System.nanoTime() - start));
+    }
+    public static void main(String[] args) {
+        //Java Concurrent-1 (Thread)
+        //javaConcurrent1();
+
+        //배열 병렬 정렬
+        parallelSort();
+    }
+
+
 }
