@@ -176,6 +176,7 @@ public class Main {
             e.printStackTrace();
         }
         System.out.println("#######################");
+
         //위와 결과 동일
         CompletableFuture<String> future3 = CompletableFuture.completedFuture("Dev History");
         System.out.println(future3.isDone()); //상태 true 출력
@@ -198,6 +199,7 @@ public class Main {
             e.printStackTrace();
         }
         System.out.println("#######################");
+
         CompletableFuture<String> future5 = CompletableFuture.supplyAsync(() -> {
             System.out.println("Hello " + Thread.currentThread().getName());
             return "Hello";
@@ -208,6 +210,7 @@ public class Main {
             e.printStackTrace();
         }
         System.out.println("#######################");
+
         /*
             CompletableFuture는 Future와 달리 콜백 주는 것이 가능하다.
             그리고 get() 이전에 처리 로직을 작성하는 것이 가능해졌다.
