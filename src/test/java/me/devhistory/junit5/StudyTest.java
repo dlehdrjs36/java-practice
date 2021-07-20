@@ -2,6 +2,7 @@ package me.devhistory.junit5;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.*;
 
 import java.time.Duration;
 
@@ -11,6 +12,9 @@ import static org.junit.jupiter.api.Assertions.*;
 class StudyTest {
     @Test
     @DisplayName("스터디 만들기")
+    @DisabledOnOs({OS.MAC, OS.WINDOWS}) // MAC, WINDOWS 운영체제에서는 테스트 수행안하도록 설정
+    @EnabledOnJre(JRE.OTHER) //JAVA_8, JAVA_9, JAVA_10, JAVA_11, JAVA_12, JAVA_13, JAVA_14 가 아닌경우에만 실행
+    @EnabledIfEnvironmentVariable(named = "TEST_ENV", matches = "history")
     void create_new_study() {
         /**
          * assertThrows
@@ -36,7 +40,7 @@ class StudyTest {
              */
             () -> assertTimeout(Duration.ofMillis(100), () -> {
                 new Study(10);
-                Thread.sleep(300);
+                Thread.sleep(70);
             }),
 
             /**
@@ -54,7 +58,7 @@ class StudyTest {
              */
             () -> assertTimeoutPreemptively(Duration.ofMillis(100), () -> {
                 new Study(10);
-                Thread.sleep(300);
+                Thread.sleep(70);
             }),
 
             /**
@@ -84,24 +88,20 @@ class StudyTest {
 
     @Test
     @DisplayName("스터디 만들기2")
+    @EnabledOnOs({OS.MAC, OS.LINUX, OS.WINDOWS}) //MAC, LINUX, WINDOWS 운영체제에서만 테스트 수행되도록 설정
+    @EnabledOnJre({JRE.JAVA_8, JRE.JAVA_9,JRE.JAVA_10, JRE.JAVA_11})
+    @EnabledIfEnvironmentVariable(named = "TEST_ENV", matches = "LOCAL") //환경변수 값이 LOCAL 경우에만 테스트 수행되도록 설정
     void create_new_study_again() {
         /**
          * assumeTrue, assumingThat
          * 특정 조건을 만족하면 테스트가 수행되도록 할 수 있다.
-         * - 시스템 환경변수에 따라서 동작하는 테스트 조작 가능
+         * 예) 시스템 환경변수에 따라서 동작하는 테스트 조작 가능
+         *
+         * assumeTrue : 조건이 다르면 테스트가 해당 위치에서 종료된다.
+         * assumingThat : 조건이 다르면 해당 테스트는 수행되지않고 아래의 테스트는 계속 수행된다.
          */
         String test_env = System.getenv("TEST_ENV");
         System.out.println(test_env);
-
-        //시스템 환경변수가 History 경우에만 테스트 수행. 환경변수가 다르면 여기서 테스트가 멈춘다.
-        assumeTrue("History".equalsIgnoreCase(test_env));
-
-        //환경변수가 다르면 현재 테스트는 수행되지않고 아래의 테스트가 계속 수행된다.
-        assumingThat("History".equalsIgnoreCase(test_env), ()->{
-            System.out.println("history");
-            Study actual = new Study(10);
-            assertEquals(actual.getLimit(), 10);
-        });
 
         //시스템 환경변수가 LOCAL 경우에만 테스트 수행
         assumingThat("LOCAL".equalsIgnoreCase(test_env), ()->{
@@ -110,6 +110,16 @@ class StudyTest {
             assertEquals(actual.getLimit(), 100);
         });
 
+        //시스템 환경변수가 History 경우에만 테스트 수행. 환경변수가 다르면 여기서 테스트가 멈춘다.
+        assumeTrue("History".equalsIgnoreCase(test_env));
+        assumeTrue("LOCAL".equalsIgnoreCase(test_env));
+
+        //환경변수가 다르면 현재 테스트는 수행되지않고 아래의 테스트가 계속 수행된다.
+        assumingThat("History".equalsIgnoreCase(test_env), ()->{
+            System.out.println("history");
+            Study actual = new Study(10);
+            assertEquals(actual.getLimit(), 10);
+        });
 
     }
 
