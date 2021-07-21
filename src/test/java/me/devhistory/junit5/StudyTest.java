@@ -1,6 +1,7 @@
 package me.devhistory.junit5;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.*;
 
@@ -11,7 +12,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class StudyTest {
     @Test
-    @DisplayName("스터디 만들기")
+    @Tag("fast") //특정 기준으로 테스트를 분류할 수 있다.
+    @DisplayName("스터디 만들기 fast")
     @DisabledOnOs({OS.MAC, OS.WINDOWS}) // MAC, WINDOWS 운영체제에서는 테스트 수행안하도록 설정
     @EnabledOnJre(JRE.OTHER) //JAVA_8, JAVA_9, JAVA_10, JAVA_11, JAVA_12, JAVA_13, JAVA_14 가 아닌경우에만 실행
     @EnabledIfEnvironmentVariable(named = "TEST_ENV", matches = "history")
@@ -87,7 +89,8 @@ class StudyTest {
     }
 
     @Test
-    @DisplayName("스터디 만들기2")
+    @Tag("slow") //특정 기준으로 테스트를 분류할 수 있다. 예) 로컬에서 수행하기에는 오래걸리는 테스트들은 CI 환경에서 동작하도록 설정 가능하다.
+    @DisplayName("스터디 만들기 slow")
     @EnabledOnOs({OS.MAC, OS.LINUX, OS.WINDOWS}) //MAC, LINUX, WINDOWS 운영체제에서만 테스트 수행되도록 설정
     @EnabledOnJre({JRE.JAVA_8, JRE.JAVA_9,JRE.JAVA_10, JRE.JAVA_11})
     @EnabledIfEnvironmentVariable(named = "TEST_ENV", matches = "LOCAL") //환경변수 값이 LOCAL 경우에만 테스트 수행되도록 설정

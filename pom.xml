@@ -25,4 +25,39 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <!-- 로컬에서 빌드할 때 fast 태그가 붙은 테스트 케이스만 테스트 수행 -->
+  <!-- CI 환경에서 빌드할 때 slow, fast 태그가 붙은 테스트 케이스만 테스트 수행 -->
+  <profiles>
+    <profile>
+      <id>default</id>
+      <activation>
+          <activeByDefault>true</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <groups>fast</groups>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>ci</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <groups>fast | slow</groups>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+
+    </profile>
+  </profiles>
 </project>
