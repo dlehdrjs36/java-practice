@@ -38,6 +38,7 @@
         <plugins>
           <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
+            <version>2.22.2</version>
             <configuration>
               <groups>fast</groups>
             </configuration>
@@ -51,13 +52,14 @@
         <plugins>
           <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
+            <version>2.22.2</version>
             <configuration>
               <groups>fast | slow</groups>
             </configuration>
           </plugin>
         </plugins>
       </build>
-
     </profile>
   </profiles>
+
 </project>
