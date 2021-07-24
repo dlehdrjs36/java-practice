@@ -18,7 +18,7 @@ class StudyTest {
     @EnabledOnJre(JRE.OTHER) //JAVA_8, JAVA_9, JAVA_10, JAVA_11, JAVA_12, JAVA_13, JAVA_14 가 아닌경우에만 실행
     @EnabledIfEnvironmentVariable(named = "TEST_ENV", matches = "history")
     void create_new_study() {
-        /**
+        /*
          * assertThrows
          * 어떠한 코드 실행 시 어떠한 타입의 예외가 발생하는지 테스트할 수 있다.
          * 발생한 예외를 받아서 메시지가 내가 기대하는 메시지와 같은지도 테스트할 수 있다.
@@ -28,13 +28,13 @@ class StudyTest {
         assertEquals("limit은 0보다 커야 한다.", message);
 
         Study study = new Study(10);
-        /**
+        /*
          * assertAll
          * 모든 테스트를 한번에 실행할 수 있다.
          * - 깨진 테스트를 한번에 확인 가능
          */
         assertAll(
-            /**
+            /*
              * assertTimeout
              * 실행하는 코드가 특정 시간이내에 반드시 완료가 되어야하는 경우를 테스트할 수 있다.
              * 단점은 코드 블록이 실행이 끝날 때까지 기다리고 시간을 비교한다.
@@ -45,7 +45,7 @@ class StudyTest {
                 Thread.sleep(70);
             }),
 
-            /**
+            /*
              * assertTimeoutPreemptively
              * 위와 마찬가지로 실행하는 코드가 특정 시간이내에 반드시 완료가 되어야하는 경우를 테스트할 수 있다.
              * 차이점은 1초안에 실행되는것을 테스트하는 경우, 코드 블록이 1초가 넘으면 즉각적으로 테스트 종료(실패).
@@ -63,13 +63,13 @@ class StudyTest {
                 Thread.sleep(70);
             }),
 
-            /**
+            /*
              * assertNotNull
              * 값이 null이 아닌지 확인
              */
             () -> assertNotNull(study),
 
-            /**
+            /*
              * assertEquals(기대하는값, 실제 값, 실패시 표시될 메시지)
              * 일반 String이 아닌 람다 식으로 메시지를 전달하는 이유
              * - 복잡한 메시지를 전달해야 할 때, 많은 문자열 연산이 존재할 수 있다. 예) "스터디를 처음 만들면 상태값이 "+ StudyStatus.DRAFT +" 이다."
@@ -80,7 +80,7 @@ class StudyTest {
             () ->  assertEquals(StudyStatus.DRAFT, study.getStatus(),
                     () -> "스터디를 처음 만들면 상태값이 "+ StudyStatus.DRAFT +" 이다."), //테스트 실패 시 메시지도 전달할 수 있다.
 
-            /**
+            /*
              * assertTrue
              * 실제 값이 기대한 값과 같은지 확인
              */
@@ -88,14 +88,15 @@ class StudyTest {
         );
     }
 
-    @Test
-    @Tag("slow") //특정 기준으로 테스트를 분류할 수 있다. 예) 로컬에서 수행하기에는 오래걸리는 테스트들은 CI 환경에서 동작하도록 설정 가능하다.
+    //@Test
+    //@Tag("slow") //특정 기준으로 테스트를 분류할 수 있다. 예) 로컬에서 수행하기에는 오래걸리는 테스트들은 CI 환경에서 동작하도록 설정 가능하다.
+    @SlowTest //태그가 slow로 설정된 커스텀 애노테이션, 문자열은 type-safe 하지않다. 태그 이름이 오타가 나는 경우 원하는대로 동작하지 않는다. 오타를 줄이고 테스트를 원하는대로 동작하도록하기 위해서 커스텀 애노테이션을 사용하는 것이 좋다.
     @DisplayName("스터디 만들기 slow")
     @EnabledOnOs({OS.MAC, OS.LINUX, OS.WINDOWS}) //MAC, LINUX, WINDOWS 운영체제에서만 테스트 수행되도록 설정
     @EnabledOnJre({JRE.JAVA_8, JRE.JAVA_9,JRE.JAVA_10, JRE.JAVA_11})
     @EnabledIfEnvironmentVariable(named = "TEST_ENV", matches = "LOCAL") //환경변수 값이 LOCAL 경우에만 테스트 수행되도록 설정
     void create_new_study_again() {
-        /**
+        /*
          * assumeTrue, assumingThat
          * 특정 조건을 만족하면 테스트가 수행되도록 할 수 있다.
          * 예) 시스템 환경변수에 따라서 동작하는 테스트 조작 가능
@@ -114,7 +115,7 @@ class StudyTest {
         });
 
         //시스템 환경변수가 History 경우에만 테스트 수행. 환경변수가 다르면 여기서 테스트가 멈춘다.
-        assumeTrue("History".equalsIgnoreCase(test_env));
+        //assumeTrue("History".equalsIgnoreCase(test_env));
         assumeTrue("LOCAL".equalsIgnoreCase(test_env));
 
         //환경변수가 다르면 현재 테스트는 수행되지않고 아래의 테스트가 계속 수행된다.
