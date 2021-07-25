@@ -24,6 +24,12 @@
       <version>5.5.2</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+      <version>5.5.2</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <!-- 로컬에서 빌드할 때 fast 태그가 붙은 테스트 케이스만 테스트 수행 -->
