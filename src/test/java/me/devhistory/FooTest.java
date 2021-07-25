@@ -1,16 +1,9 @@
 package me.devhistory;
 
 
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.DisplayNameGeneration;
-import org.junit.jupiter.api.DisplayNameGenerator;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.*;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 //junit 5 부터는 테스트 클래스, 테스트 메소드, 라이프사이클 메소드가 public일 필요가 없다. private 사용 불가능.
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class) //Underscore를 빈 공백으로 치환

@@ -1,9 +1,17 @@
 package me.devhistory.junit5;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.*;
+import org.junit.jupiter.api.extension.ParameterContext;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.aggregator.AggregateWith;
+import org.junit.jupiter.params.aggregator.ArgumentsAccessor;
+import org.junit.jupiter.params.aggregator.ArgumentsAggregationException;
+import org.junit.jupiter.params.aggregator.ArgumentsAggregator;
+import org.junit.jupiter.params.converter.ArgumentConversionException;
+import org.junit.jupiter.params.converter.ConvertWith;
+import org.junit.jupiter.params.converter.SimpleArgumentConverter;
+import org.junit.jupiter.params.provider.*;
 
 import java.time.Duration;
 
@@ -14,9 +22,9 @@ class StudyTest {
     @Test
     @Tag("fast") //특정 기준으로 테스트를 분류할 수 있다.
     @DisplayName("스터디 만들기 fast")
-    @DisabledOnOs({OS.MAC, OS.WINDOWS}) // MAC, WINDOWS 운영체제에서는 테스트 수행안하도록 설정
-    @EnabledOnJre(JRE.OTHER) //JAVA_8, JAVA_9, JAVA_10, JAVA_11, JAVA_12, JAVA_13, JAVA_14 가 아닌경우에만 실행
-    @EnabledIfEnvironmentVariable(named = "TEST_ENV", matches = "history")
+    //@DisabledOnOs({OS.MAC, OS.WINDOWS}) // MAC, WINDOWS 운영체제에서는 테스트 수행안하도록 설정
+    //@EnabledOnJre(JRE.OTHER) //JAVA_8, JAVA_9, JAVA_10, JAVA_11, JAVA_12, JAVA_13, JAVA_14 가 아닌경우에만 실행
+    //@EnabledIfEnvironmentVariable(named = "TEST_ENV", matches = "history")
     void create_new_study() {
         /*
          * assertThrows
@@ -126,5 +134,92 @@ class StudyTest {
         });
 
     }
+
+    @DisplayName("스터디 만들기(RepeatFastTest)")
+    @RepeatFastTest //== @RepeatedTest(value = 10, name = "{displayName} 반복, {currentRepetition}/{totalRepetitions}") //테스트를 반복할 횟수, 반복하는 테스트의 이름
+    void repeatTest(RepetitionInfo repetitionInfo){
+        System.out.println("test" + repetitionInfo.getCurrentRepetition() + "/" + repetitionInfo.getTotalRepetitions()); //현재 몇 번째 반복하고 있는것인지, 총 몇번 반복해야 하는지 등을 알 수 있다.
+    }
+
+    @Tag("fast")
+    @DisplayName("스터디 만들기(ParameterizedTest)")
+    @ParameterizedTest(name = "{index}. {displayName}, message={0}")
+    @ValueSource(strings = {"날씨가", "많이", "더워지고", "있네요."})
+    @NullAndEmptySource //@EmptySource + @NullSource
+    //@EmptySource 테스트 인자로 비어있는 문자열을 추가
+    //@NullSource 테스트 인자로 null 추가
+    void parameterizedTest(String message){
+        System.out.println(message);
+
+    }
+
+    @Tag("fast")
+    @DisplayName("스터디 만들기")
+    @ParameterizedTest(name = "{index}. {displayName}, message={0}")
+    @ValueSource(ints = {10, 20, 30})
+    @NullSource
+    void parameterizedTest2(Integer limit){
+        System.out.println(limit);
+    }
+
+    /*
+     * ValueSource를 Study 타입으로 받을 수도 있다.(인자 1개)
+     */
+    @Tag("fast")
+    @DisplayName("스터디 만들기")
+    @ParameterizedTest(name = "{index}. {displayName}, message={0}")
+    @ValueSource(ints = {10, 20, 30})
+    void parameterizedTest3(@ConvertWith(StudyConverter.class) Study study){
+        System.out.println(study.getLimit());
+    }
+    //SimpleArgumentConverter 상속 받은 구현체를 이용하여 파라미터를 특정 타입으로 변환 가능
+    //SimpleArgumentConverter는 하나의 인자에만 적용할 수 있다.
+    static class StudyConverter extends SimpleArgumentConverter{
+        @Override
+        protected Object convert(Object source, Class<?> targetType) throws ArgumentConversionException {
+            assertEquals(Study.class, targetType, "Can only convert to Study");
+            return new Study((Integer.parseInt(source.toString())));
+        }
+    }
+
+    /*
+     * CsvSource를 Study 타입으로 받을 수도 있다.(인자 2개)
+     */
+    //1. 두 개의 인자를 받아서 Study 생성
+    @Tag("fast")
+    @DisplayName("스터디 만들기")
+    @ParameterizedTest(name = "{index}. {displayName}, message={0}, {1}")
+    @CsvSource({"10, '자바 스터디'", "20, 스프링"})
+    void parameterizedTest4(Integer limit, String name){
+        Study study = new Study(limit, name);
+        System.out.println(study);
+    }
+
+    //2. ArgumentsAccessor를 이용해서 Study 생성
+    @Tag("fast")
+    @DisplayName("스터디 만들기")
+    @ParameterizedTest(name = "{index}. {displayName}, message={0}, {1}")
+    @CsvSource({"30, 'HTTP'", "40, 스프링 부트"})
+    void parameterizedTest5(ArgumentsAccessor argumentsAccessor){
+        Study study = new Study(argumentsAccessor.getInteger(0), argumentsAccessor.getString(1));
+        System.out.println(study);
+    }
+
+    //3. 커스텀 Accessor를 이용해서 Study 생성
+    @Tag("fast")
+    @DisplayName("스터디 만들기")
+    @ParameterizedTest(name = "{index}. {displayName}, message={0}, {1}")
+    @CsvSource({"40, 'JPA'", "50, JUnit"})
+    void parameterizedTest6(@AggregateWith(StudyAggregator.class) Study study){
+        System.out.println(study);
+    }
+    //커스텀 Accessor
+    static class StudyAggregator implements ArgumentsAggregator {
+        @Override
+        public Object aggregateArguments(ArgumentsAccessor argumentsAccessor, ParameterContext parameterContext) throws ArgumentsAggregationException {
+            return new Study(argumentsAccessor.getInteger(0), argumentsAccessor.getString(1));
+        }
+    }
+
 
 }
