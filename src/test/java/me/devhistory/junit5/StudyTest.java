@@ -18,7 +18,10 @@ import java.time.Duration;
 import static org.junit.jupiter.api.Assumptions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class StudyTest {
+    @Order(2)
     @Test
     @Tag("fast") //특정 기준으로 테스트를 분류할 수 있다.
     @DisplayName("스터디 만들기 fast")
@@ -98,6 +101,7 @@ class StudyTest {
 
     //@Test
     //@Tag("slow") //특정 기준으로 테스트를 분류할 수 있다. 예) 로컬에서 수행하기에는 오래걸리는 테스트들은 CI 환경에서 동작하도록 설정 가능하다.
+    @Order(1)
     @SlowTest //태그가 slow로 설정된 커스텀 애노테이션, 문자열은 type-safe 하지않다. 태그 이름이 오타가 나는 경우 원하는대로 동작하지 않는다. 오타를 줄이고 테스트를 원하는대로 동작하도록하기 위해서 커스텀 애노테이션을 사용하는 것이 좋다.
     @DisplayName("스터디 만들기 slow")
     @EnabledOnOs({OS.MAC, OS.LINUX, OS.WINDOWS}) //MAC, LINUX, WINDOWS 운영체제에서만 테스트 수행되도록 설정
@@ -135,12 +139,14 @@ class StudyTest {
 
     }
 
+    @Order(3)
     @DisplayName("스터디 만들기(RepeatFastTest)")
     @RepeatFastTest //== @RepeatedTest(value = 10, name = "{displayName} 반복, {currentRepetition}/{totalRepetitions}") //테스트를 반복할 횟수, 반복하는 테스트의 이름
     void repeatTest(RepetitionInfo repetitionInfo){
         System.out.println("test" + repetitionInfo.getCurrentRepetition() + "/" + repetitionInfo.getTotalRepetitions()); //현재 몇 번째 반복하고 있는것인지, 총 몇번 반복해야 하는지 등을 알 수 있다.
     }
 
+    @Order(4)
     @Tag("fast")
     @DisplayName("스터디 만들기(ParameterizedTest)")
     @ParameterizedTest(name = "{index}. {displayName}, message={0}")
@@ -153,6 +159,7 @@ class StudyTest {
 
     }
 
+    @Order(5)
     @Tag("fast")
     @DisplayName("스터디 만들기")
     @ParameterizedTest(name = "{index}. {displayName}, message={0}")
@@ -165,6 +172,7 @@ class StudyTest {
     /*
      * ValueSource를 Study 타입으로 받을 수도 있다.(인자 1개)
      */
+    @Order(6)
     @Tag("fast")
     @DisplayName("스터디 만들기")
     @ParameterizedTest(name = "{index}. {displayName}, message={0}")
@@ -186,6 +194,7 @@ class StudyTest {
      * CsvSource를 Study 타입으로 받을 수도 있다.(인자 2개)
      */
     //1. 두 개의 인자를 받아서 Study 생성
+    @Order(7)
     @Tag("fast")
     @DisplayName("스터디 만들기")
     @ParameterizedTest(name = "{index}. {displayName}, message={0}, {1}")
@@ -196,6 +205,7 @@ class StudyTest {
     }
 
     //2. ArgumentsAccessor를 이용해서 Study 생성
+    @Order(8)
     @Tag("fast")
     @DisplayName("스터디 만들기")
     @ParameterizedTest(name = "{index}. {displayName}, message={0}, {1}")
@@ -206,6 +216,7 @@ class StudyTest {
     }
 
     //3. 커스텀 Accessor를 이용해서 Study 생성
+    @Order(9)
     @Tag("fast")
     @DisplayName("스터디 만들기")
     @ParameterizedTest(name = "{index}. {displayName}, message={0}, {1}")
@@ -221,5 +232,47 @@ class StudyTest {
         }
     }
 
+    int value = 0;
 
+    /*
+     * JUnit의 기본전략은 테스트 메소드마다 인스턴스를 새로 만들기 때문에 value 값은 어떤 테스트에서도 0으로 표시된다.
+     * - 테스트 메소드마다 실행하는 인스턴스 해시 값이 모두 다르다.
+     * 테스트 메소드마다 인스턴스를 새로 만드는 이유는 테스트 메소드를 독립적으로 실행하여 예싱치 못한 부작용을 방지하기 위함
+     */
+    @Order(10)
+    @Tag("fast")
+    @Test
+    void testInstance() {
+        System.out.println(this + ":" + value++); // 0
+    }
+
+    @Order(11)
+    @Tag("fast")
+    @Test
+    void testInstance2() {
+        System.out.println(this + ":" + value++); // 0
+    }
+
+    @Order(12)
+    @Tag("fast")
+    @Test
+    void testInstance3() {
+        System.out.println(this + ":" + value++); // 0
+    }
+
+    /*
+     * 테스트 인스턴스 전략을 클래스 마다 하나만 생성(@TestInstance(TestInstance.Lifecycle.PER_CLASS))하도록 변경하면 BeforeAll, AfterAll이 static일 필요는 없다.
+     *  - 테스트 인스턴스를 하나만 만들기 때문에 해당하는 인스턴스도 하나만 있으면 된다.
+     *  - 그러나 테스트 인스턴스를 테스트 메소드별로 만든다면 여러 테스트 메소드에서 static하게 사용하기 위해서 static 선언이 필요하다.
+     * 테스트 인스턴스가 하나이기 때문에 테스트별 인스턴스 해시 값이 일치하고 위에서 선언한 value 값도 테스트 메소드별로 변경이 된다.
+     */
+    @BeforeAll
+    void beforeAll() {
+        System.out.println("before all");
+    }
+
+    @AfterAll
+    void afterAll() {
+        System.out.println("after all");
+    }
 }
