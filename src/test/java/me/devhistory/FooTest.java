@@ -6,7 +6,7 @@ import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 //junit 5 부터는 테스트 클래스, 테스트 메소드, 라이프사이클 메소드가 public일 필요가 없다. private 사용 불가능.
-@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class) //Underscore를 빈 공백으로 치환
+//@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class) //Underscore를 빈 공백으로 치환
 class FooTest {
     @Test
     void create_new_foo() {
