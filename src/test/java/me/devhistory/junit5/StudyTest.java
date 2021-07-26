@@ -3,6 +3,7 @@ package me.devhistory.junit5;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.*;
 import org.junit.jupiter.api.extension.ParameterContext;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.aggregator.AggregateWith;
 import org.junit.jupiter.params.aggregator.ArgumentsAccessor;
@@ -19,8 +20,14 @@ import static org.junit.jupiter.api.Assumptions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 //@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+//@ExtendWith(FindSlowTastExtention.class) 선언적인 확장팩 등록
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class StudyTest {
+
+    @RegisterExtension //프로그래밍적인 방법으로 확장팩 등록
+    static FindSlowTestExtension findSlowTastExtention =
+            new FindSlowTestExtension(1000L);
+
     @Order(2)
     @Test
     @Tag("fast") //특정 기준으로 테스트를 분류할 수 있다.
@@ -28,7 +35,10 @@ class StudyTest {
     //@DisabledOnOs({OS.MAC, OS.WINDOWS}) // MAC, WINDOWS 운영체제에서는 테스트 수행안하도록 설정
     //@EnabledOnJre(JRE.OTHER) //JAVA_8, JAVA_9, JAVA_10, JAVA_11, JAVA_12, JAVA_13, JAVA_14 가 아닌경우에만 실행
     //@EnabledIfEnvironmentVariable(named = "TEST_ENV", matches = "history")
-    void create_new_study() {
+    void create_new_study() throws InterruptedException {
+        long startTime = System.currentTimeMillis();
+        Thread.sleep(2000L);
+        System.out.println((System.currentTimeMillis()-startTime)/1000+"초");
         /*
          * assertThrows
          * 어떠한 코드 실행 시 어떠한 타입의 예외가 발생하는지 테스트할 수 있다.
@@ -103,11 +113,14 @@ class StudyTest {
     //@Tag("slow") //특정 기준으로 테스트를 분류할 수 있다. 예) 로컬에서 수행하기에는 오래걸리는 테스트들은 CI 환경에서 동작하도록 설정 가능하다.
     @Order(1)
     @SlowTest //태그가 slow로 설정된 커스텀 애노테이션, 문자열은 type-safe 하지않다. 태그 이름이 오타가 나는 경우 원하는대로 동작하지 않는다. 오타를 줄이고 테스트를 원하는대로 동작하도록하기 위해서 커스텀 애노테이션을 사용하는 것이 좋다.
-    @DisplayName("스터디 만들기 slow")
+    @DisplayName("스터디 만들기 SlowTest")
     @EnabledOnOs({OS.MAC, OS.LINUX, OS.WINDOWS}) //MAC, LINUX, WINDOWS 운영체제에서만 테스트 수행되도록 설정
     @EnabledOnJre({JRE.JAVA_8, JRE.JAVA_9,JRE.JAVA_10, JRE.JAVA_11})
     @EnabledIfEnvironmentVariable(named = "TEST_ENV", matches = "LOCAL") //환경변수 값이 LOCAL 경우에만 테스트 수행되도록 설정
-    void create_new_study_again() {
+    void create_new_study_again() throws InterruptedException {
+        long startTime = System.currentTimeMillis();
+        Thread.sleep(2000L);
+        System.out.println((System.currentTimeMillis()-startTime)/1000+"초");
         /*
          * assumeTrue, assumingThat
          * 특정 조건을 만족하면 테스트가 수행되도록 할 수 있다.
@@ -199,7 +212,8 @@ class StudyTest {
     @DisplayName("스터디 만들기")
     @ParameterizedTest(name = "{index}. {displayName}, message={0}, {1}")
     @CsvSource({"10, '자바 스터디'", "20, 스프링"})
-    void parameterizedTest4(Integer limit, String name){
+    void parameterizedTest4(Integer limit, String name) throws InterruptedException {
+        Thread.sleep(1005);
         Study study = new Study(limit, name);
         System.out.println(study);
     }
