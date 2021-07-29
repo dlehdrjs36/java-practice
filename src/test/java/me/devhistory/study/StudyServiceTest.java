@@ -4,7 +4,8 @@ import me.devhistory.domain.Member;
 import me.devhistory.domain.Study;
 import me.devhistory.member.MemberService;
 import org.junit.jupiter.api.Test;
-import static org.mockito.Mockito.mock;
+
+import static org.mockito.ArgumentMatchers.any;
 
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class StudyServiceTest {
@@ -43,9 +45,73 @@ class StudyServiceTest {
     @Test
     void createStudyServiceMockParameter(@Mock MemberService memberServiceMock2,
                                          @Mock StudyRepository studyRepositoryMock2){
+
         StudyService studyService = new StudyService(memberServiceMock2, studyRepositoryMock2);
         System.out.println("@Mock 애노테이션으로 파라미터 부분에 생성한 Mock 객체 테스트");
         assertNotNull(studyService);
+
+        /*
+         * Mock 객체를 가지고 Stubbing
+         */
+        Member member = new Member();
+        member.setId(1L);
+        member.setEmail("devhistory@email.com");
+        //memberServiceMock2.findById(1L)이 호출되면, Optional로 감싼 member 인스턴스를 리턴해주도록 설정
+        when((memberServiceMock2.findById(1L))).thenReturn(Optional.of(member));
+        //memberServiceMock2.findById(1L)이 호출되면, 예외를 던지도록 설정
+        //when((memberServiceMock2.findById(1L))).thenThrow(new RuntimeException());
+
+        Optional<Member> findById = memberServiceMock2.findById(1L);
+        assertEquals("devhistory@email.com", findById.get().getEmail());
+
+        /*
+         * createNewStudy 내부에서 전달받은 인자를 이용하여 memberService.findById(1L)이 호출되고 이 때 위에서 설정한 Stubbing에 따라 member 객체가 반환된다.
+         */
+        Study study = new Study(10, "java");
+        studyService.createNewStudy(1L, study);
+
+        /*
+         * Argument matchers를 이용하여 어떤 파라미터를 받아도 anyMember 인스턴스 리턴해주도록 설정
+         */
+        Member anyMember = new Member();
+        anyMember.setId(333L);
+        anyMember.setEmail("any@email.com");
+        when((memberServiceMock2.findById(any()))).thenReturn(Optional.of(anyMember));
+
+        Optional<Member> findById2 = memberServiceMock2.findById(3L);
+        assertEquals("any@email.com", findById2.get().getEmail());
+
+        /*
+         * Void 메소드에서 특정 매개변수를 받거나 호출된 경우 예외를 발생 시킬 수 있다.
+         */
+        //memberServiceMock2의 validate(1L)가 호출되면 예외를 던지도록 설정
+        doThrow(new IllegalArgumentException()).when(memberServiceMock2).validate(1L);
+        //발생하는 예외가 맞는지 확인
+        assertThrows(IllegalArgumentException.class, () -> {
+            memberServiceMock2.validate(1L);
+        });
+        //validate(2L)은 예외 미발생
+        memberServiceMock2.validate(2L);
+
+        /*
+         * 메소드가 여러 번 호출 될 때, 호출되는 순서에 따라 다르게 Mocking 가능
+         * - 첫 번째 anyMember 리턴
+         * - 두 번째 예외 발생
+         * - 세 번째 비어있는 Optional 리턴
+         */
+        when((memberServiceMock2.findById(any())))
+                .thenReturn(Optional.of(anyMember))
+                .thenThrow(new RuntimeException())
+                .thenReturn(Optional.empty());
+        Optional<Member> byId = memberServiceMock2.findById(1L);
+
+        assertEquals("any@email.com", findById2.get().getEmail());
+
+        assertThrows(RuntimeException.class, () -> {
+            memberServiceMock2.findById(2L);
+        });
+
+        assertEquals(Optional.empty(), memberServiceMock2.findById(3L));
     }
 
     @Test
@@ -57,6 +123,11 @@ class StudyServiceTest {
             @Override
             public Optional<Member> findById(Long memberId) {
                 return Optional.empty();
+            }
+
+            @Override
+            public void validate(Long memberId) {
+
             }
         };
 
