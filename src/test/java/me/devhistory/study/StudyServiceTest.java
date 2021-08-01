@@ -273,4 +273,29 @@ class StudyServiceTest {
         System.out.println("---------------");
     }
 
+    @Test
+    void mockitoStubbing(@Mock StudyRepository studyRepository,
+                         @Mock MemberService memberService) {
+        StudyService studyService = new StudyService(memberService, studyRepository);
+        assertNotNull(studyService);
+
+        // TODO memberService 객체에 findById 메소드를 1L 값으로 호출하면 Optional.of(member) 객체를 리턴하도록 Stubbing
+        Member member = new Member();
+        member.setId(2L);
+        member.setEmail("test@email.com");
+
+        when(memberService.findById(1L)).thenReturn(Optional.of(member));
+        assertEquals("test@email.com", member.getEmail());
+
+        // TODO studyRepository 객체에 save 메소드를 study 객체로 호출하면 study 객체 그대로 리턴하도록 Stubbing
+        Study study = new Study(10, "테스트");
+
+        when(studyRepository.save(study)).thenReturn(study);
+
+        studyService.createNewStudy(1L, study);
+
+        assertEquals(2L, study.getOwnerId());
+        assertEquals(member.getId(), study.getOwnerId());
+
+    }
 }
