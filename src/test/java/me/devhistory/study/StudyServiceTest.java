@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
 
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Example;
@@ -127,6 +128,16 @@ class StudyServiceTest {
 
             @Override
             public void validate(Long memberId) {
+
+            }
+
+            @Override
+            public void notify(Study newstudy) {
+
+            }
+
+            @Override
+            public void notify(Member member) {
 
             }
         };
@@ -297,5 +308,42 @@ class StudyServiceTest {
         assertEquals(2L, study.getOwnerId());
         assertEquals(member.getId(), study.getOwnerId());
 
+        /* Mock 객체 동작여부 확인(호출여부, 호출횟수 등) */
+        //memberService에서 notify(study)가 1번만 호출되어야 한다.(호출 안되거나 1번보다 많이 호출되면 테스트 실패)
+        verify(memberService, times(1)).notify(study);
+//        verify(memberService, times(1)).notify(member);
+
+        //memberService에서 validate(any())는 호출되면 안된다.
+        verify(memberService, never()).validate(any());
+
+        //memberService에서 notify(study) 호출 후 notify(member.get())가 호출되어야 한다. 호출 순서 검증
+        InOrder inOrder = inOrder(memberService);
+        inOrder.verify(memberService).notify(study);
+//        inOrder.verify(memberService).notify(member);
+    }
+
+    @Test
+    void mockitoStubbing2(@Mock StudyRepository studyRepository,
+                         @Mock MemberService memberService) {
+        StudyService studyService = new StudyService(memberService, studyRepository);
+        assertNotNull(studyService);
+
+        Member member = new Member();
+        member.setId(1L);
+        member.setEmail("test@email.com");
+
+        Study study = new Study(10, "테스트");
+
+        when(memberService.findById(1L)).thenReturn(Optional.of(member));
+        when(studyRepository.save(study)).thenReturn(study);
+
+        studyService.createNewStudy(1L, study);
+        assertEquals(member.getId(), study.getOwnerId());
+
+        /* Mock 객체 동작여부 확인(호출여부, 호출횟수 등) */
+        //memberService에서 notify(study)가 1번만 호출되어야 한다.(호출 안되거나 1번보다 많이 호출되면 테스트 실패)
+        verify(memberService, times(1)).notify(study);
+        //어떤 동작 이후에는 어떤 동작도 발생하면 안된다.
+        verifyNoMoreInteractions(memberService);
     }
 }
