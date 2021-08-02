@@ -26,10 +26,20 @@ public class StudyService {
 
         Study newstudy = repository.save(study);
         memberService.notify(newstudy);
-        /* memberService에서 notify(study) 호출 후에는 어떤 동작도 벌어지면 안된다. */
-        //memberService.notify(newstudy);
+        /* memberService에서 notify(study) 호출 후에는 memberService의 어떤 동작도 벌어지면 안된다. */
+//        memberService.notify(newstudy);
 //        memberService.notify(member.get());
+
+        study.getOwnerId(); // memberService와 무관한 동작
+
         return newstudy;
+    }
+
+    public Study openStudy(Study study) {
+        study.open();
+        Study openedStudy = repository.save(study);
+        memberService.notify(openedStudy);
+        return openedStudy;
     }
 
 }

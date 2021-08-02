@@ -2,11 +2,10 @@ package me.devhistory.study;
 
 import me.devhistory.domain.Member;
 import me.devhistory.domain.Study;
+import me.devhistory.domain.StudyStatus;
 import me.devhistory.member.MemberService;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.mockito.ArgumentMatchers.any;
-
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
@@ -20,7 +19,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class StudyServiceTest {
@@ -58,9 +58,9 @@ class StudyServiceTest {
         member.setId(1L);
         member.setEmail("devhistory@email.com");
         //memberServiceMock2.findById(1L)이 호출되면, Optional로 감싼 member 인스턴스를 리턴해주도록 설정
-        when((memberServiceMock2.findById(1L))).thenReturn(Optional.of(member));
+        when(memberServiceMock2.findById(1L)).thenReturn(Optional.of(member));
         //memberServiceMock2.findById(1L)이 호출되면, 예외를 던지도록 설정
-        //when((memberServiceMock2.findById(1L))).thenThrow(new RuntimeException());
+        //when(memberServiceMock2.findById(1L)).thenThrow(new RuntimeException());
 
         Optional<Member> findById = memberServiceMock2.findById(1L);
         assertEquals("devhistory@email.com", findById.get().getEmail());
@@ -77,7 +77,7 @@ class StudyServiceTest {
         Member anyMember = new Member();
         anyMember.setId(333L);
         anyMember.setEmail("any@email.com");
-        when((memberServiceMock2.findById(any()))).thenReturn(Optional.of(anyMember));
+        when(memberServiceMock2.findById(any())).thenReturn(Optional.of(anyMember));
 
         Optional<Member> findById2 = memberServiceMock2.findById(3L);
         assertEquals("any@email.com", findById2.get().getEmail());
@@ -100,12 +100,12 @@ class StudyServiceTest {
          * - 두 번째 예외 발생
          * - 세 번째 비어있는 Optional 리턴
          */
-        when((memberServiceMock2.findById(any())))
+        when(memberServiceMock2.findById(any()))
                 .thenReturn(Optional.of(anyMember))
                 .thenThrow(new RuntimeException())
                 .thenReturn(Optional.empty());
-        Optional<Member> byId = memberServiceMock2.findById(1L);
 
+        Optional<Member> byId = memberServiceMock2.findById(1L);
         assertEquals("any@email.com", findById2.get().getEmail());
 
         assertThrows(RuntimeException.class, () -> {
@@ -325,6 +325,7 @@ class StudyServiceTest {
     @Test
     void mockitoStubbing2(@Mock StudyRepository studyRepository,
                          @Mock MemberService memberService) {
+        //Given
         StudyService studyService = new StudyService(memberService, studyRepository);
         assertNotNull(studyService);
 
@@ -334,16 +335,47 @@ class StudyServiceTest {
 
         Study study = new Study(10, "테스트");
 
-        when(memberService.findById(1L)).thenReturn(Optional.of(member));
-        when(studyRepository.save(study)).thenReturn(study);
+        /* BDD 스타일에서 어울리지 않는 부분
+         * Given에 해당하는데 API 이름이 when으로 되어있음
+         * - when(memberService.findById(1L)).thenReturn(Optional.of(member));
+         * - when(studyRepository.save(study)).thenReturn(study);
+         * BDD 스타일로 변경 */
+        given(memberService.findById(1L)).willReturn(Optional.of(member));
+        given(studyRepository.save(study)).willReturn(study);
 
+        //When
         studyService.createNewStudy(1L, study);
         assertEquals(member.getId(), study.getOwnerId());
 
-        /* Mock 객체 동작여부 확인(호출여부, 호출횟수 등) */
-        //memberService에서 notify(study)가 1번만 호출되어야 한다.(호출 안되거나 1번보다 많이 호출되면 테스트 실패)
-        verify(memberService, times(1)).notify(study);
-        //어떤 동작 이후에는 어떤 동작도 발생하면 안된다.
-        verifyNoMoreInteractions(memberService);
+        //Then
+        /* BDD 스타일에서 어울리지 않는 부분
+         * - verify(memberService, times(1)).notify(study);
+         * - verifyNoMoreInteractions(memberService); //특정 시점 이후에는 memberService의 어떤 동작도 발생하면 안된다.
+         * BDD 스타일로 변경 */
+        then(memberService).should(times(1)).notify(study);
+        then(memberService).shouldHaveNoMoreInteractions();
     }
+
+    @DisplayName("다른 사용자가 볼 수 있도록 스터디를 공개한다.")
+    @Test
+    void openStudy() {
+        // Given
+        StudyService studyService = new StudyService(memberServiceMock, studyRepositoryMock);
+        Study study = new Study(10, "더 자바, 테스트");
+        assertNull(study.getOpenedDateTime());
+        // TODO studyRepository Mock객체의 save 메소드를 호출 시 study를 리턴하도록 만들기.
+        given(studyRepositoryMock.save(any())).willReturn(study);
+
+        // When
+        studyService.openStudy(study);
+
+        // Then
+        // TODO study의 status가 OPENED로 변경됐는지 확인
+        assertEquals(StudyStatus.OPENED, study.getStatus());
+        // TODO study의 openedDataTime이 null이 아닌지 확인
+        assertNotNull(study.getOpenedDateTime());
+        // TODO memberService의 notify(study)가 호출 됐는지 확인.
+        then(memberServiceMock).should().notify(study);
+    }
+
 }
